@@ -6,7 +6,7 @@ export default function Hero() {
         Smart document summarization and approval workflows powered by AI.
       </p>
       <a
-        href="/dashboard"
+        href="/upload"
         className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition mt-30"
       >
         Get Started
