@@ -2,82 +2,77 @@
 
 import { useState } from "react";
 
-export default function UploadPage() {
+export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState("");
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      const allowedTypes = [
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain"
-      ];
+  const handleUpload = async () => {
+    if (!file) return;
+    setLoading(true);
 
-      if (!allowedTypes.includes(selected.type)) {
-        setError("Only PDF, DOCX, and TXT files are allowed.");
-        setFile(null);
-        return;
-      }
+    const formData = new FormData();
+    formData.append("file", file);
 
-      setFile(selected);
-      setError("");
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      setResult(data);
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleUpload = () => {
-    if (!file) {
-      setError("Please choose a file first.");
-      return;
-    }
-    // For now, just preview selected file; backend logic will be added later.
-    alert(`File ready for upload: ${file.name}`);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-      <div className="w-full max-w-lg bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-8">Upload Document</h1>
-
-        {/* File Selection */}
-        <div className="flex gap-2 items-center">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-50">
+      <div className="w-full max-w-2xl bg-white shadow-md rounded-lg p-6 space-y-6">
+        {/* Upload Section */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4 text-black">
+            📂 Upload a Document
+          </h2>
           <input
             type="file"
             accept=".pdf,.docx,.txt"
-            id="fileInput"
-            className="hidden"
-            onChange={handleFileSelect}
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="block w-full text-sm text-black border border-gray-300 rounded-lg cursor-pointer focus:outline-none p-2 mb-4"
           />
           <button
-            onClick={() => document.getElementById("fileInput")?.click()}
-            className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition"
-          >
-            {file ? file.name : "Choose File"}
-          </button>
-          <button
             onClick={handleUpload}
-            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+            disabled={loading || !file}
+            className={`px-5 py-2 rounded-lg text-white font-medium ${
+              loading || !file
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Upload
+            {loading ? "Processing..." : "Upload & Summarize"}
           </button>
         </div>
 
-        {/* Error Message */}
-        {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
-
-        {/* Preview Selected File Info */}
-        {file && !error && (
-          <div className="mt-4 p-3 border rounded bg-gray-100">
-            <p className="text-gray-700">
-              <strong>File:</strong> {file.name}
-            </p>
-            <p className="text-gray-700">
-              <strong>Type:</strong> {file.type || "Unknown"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Size:</strong> {(file.size / 1024).toFixed(2)} KB
-            </p>
+        {/* AI Summary Section */}
+        {result && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2 text-black">
+              🤖 Genarated Summary
+            </h3>
+            <div className="h-[400px] overflow-y-auto border border-gray-300 rounded-lg p-4 text-sm leading-relaxed whitespace-pre-wrap bg-gray-50 text-black">
+              {result.summary}
+            </div>
+            <div className="mt-4 text-sm text-black">
+              <p>
+                <strong>Word Count:</strong> {result.wordCount}
+              </p>
+              <p>
+                <strong>File:</strong> {result.fileName} ({result.fileType})
+              </p>
+            </div>
           </div>
         )}
       </div>
