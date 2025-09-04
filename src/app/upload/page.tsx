@@ -11,12 +11,10 @@ export default function Home() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const summaryKeys = ["short", "medium", "long", "keyPoints"];
+  const summaryKeys = ["short", "detailed"];
   const summaryLabels: Record<string, string> = {
     short: "Short Summary",
-    medium: "Medium Summary",
-    long: "Long Summary",
-    keyPoints: "Key Points",
+    detailed: "Detailed Summary",
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

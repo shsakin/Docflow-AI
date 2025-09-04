@@ -8,6 +8,13 @@
       "when": 1754846470621,
       "tag": "0000_breezy_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757009336645,
+      "tag": "0001_slow_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

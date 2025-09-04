@@ -1,87 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import mammoth from "mammoth";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export const runtime = "nodejs";
 
 // ------------------ Helpers ------------------
 
-// Break long texts into smaller chunks to avoid Hugging Face 400 errors
-function chunkText(text: string, maxChunkSize: number = 900): string[] {
-  const words = text.split(" ");
-  const chunks: string[] = [];
-  let currentChunk: string[] = [];
-
-  for (const word of words) {
-    if (currentChunk.join(" ").length + word.length > maxChunkSize) {
-      chunks.push(currentChunk.join(" "));
-      currentChunk = [word];
-    } else {
-      currentChunk.push(word);
-    }
+// Groq summarizer function
+async function groqSummarize(text: string, style: "short" | "detailed"): Promise<string> {
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  
+  if (!GROQ_API_KEY) {
+    throw new Error("Groq API key not configured");
   }
 
-  if (currentChunk.length > 0) chunks.push(currentChunk.join(" "));
-  return chunks;
-}
+  const prompts = {
+    short: "Create a concise, 2-3 sentence summary that captures the main points of this document:",
+    detailed: "Create a comprehensive summary that covers all key points, main arguments, and important details from this document. Use bullet points where appropriate:"
+  };
 
-// Hugging Face summarizer
-async function hfSummarize(
-  text: string,
-  max_length: number,
-  min_length: number
-): Promise<string> {
-  const API_TOKEN = process.env.HF_API_KEY;
-  if (!API_TOKEN) throw new Error("Hugging Face API token not configured");
+  const maxTokens = {
+    short: 100,
+    detailed: 300
+  };
 
-  const response = await fetch(
-    "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
-    {
-      headers: {
-        Authorization: `Bearer ${API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({
-        inputs: text,
-        parameters: { max_length, min_length, do_sample: false },
-      }),
-    }
-  );
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant", // Current fast model
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant that creates accurate, informative summaries. Always focus on the key information and main ideas."
+        },
+        {
+          role: "user",
+          content: `${prompts[style]}\n\n${text.substring(0, 7000)}` // Limit input to avoid token limits
+        }
+      ],
+      max_tokens: maxTokens[style],
+      temperature: 0.3,
+    }),
+  });
 
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Hugging Face API error: ${response.status} - ${errText}`);
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
   }
 
   const result = await response.json();
-  return result[0]?.summary_text || "Unable to generate summary";
+  return result.choices[0]?.message?.content || "Unable to generate summary";
 }
 
-// Handle chunking + multiple versions
+// Generate both summary versions
 async function generateSummaries(text: string) {
-  const chunks = chunkText(text, 900);
+  try {
+    // Run both summarizations in parallel for speed
+    const [short, detailed] = await Promise.all([
+      groqSummarize(text, "short"),
+      groqSummarize(text, "detailed")
+    ]);
 
-  // Summarize each chunk
-  const summarizedChunks = await Promise.all(
-    chunks.map((chunk) => hfSummarize(chunk, 120, 40))
-  );
-
-  const combinedText = summarizedChunks.join(" ");
-
-  // Generate different styles
-  const [short, medium, long] = await Promise.all([
-    hfSummarize(combinedText, 60, 20),   // Short
-    hfSummarize(combinedText, 120, 50),  // Medium
-    hfSummarize(combinedText, 250, 100), // Long
-  ]);
-
-  const keyPoints = medium
-    .split(". ")
-    .map((s) => "• " + s.trim())
-    .join("\n");
-
-  return { short, medium, long, keyPoints };
+    return { short, detailed };
+  } catch (error) {
+    console.error("Error generating summaries:", error);
+    throw error;
+  }
 }
 
 // ------------------ API Route ------------------
@@ -101,7 +91,15 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     let text = "";
 
-    // Extract text
+    // Save file to public/uploads
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+    const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const filePath = path.join(uploadsDir, safeFileName);
+    await writeFile(filePath, buffer);
+    const fileUrl = `/uploads/${safeFileName}`;
+
+    // Extract text based on file type
     if (file.type === "application/pdf") {
       const data = await pdf(buffer);
       text = data.text;
@@ -120,30 +118,54 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanedText = text.replace(/\s+/g, " ").replace(/\n+/g, " ").trim();
+    // Clean up the extracted text
+    const cleanedText = text
+      .replace(/\s+/g, " ")  // Normalize whitespace
+      .replace(/\n+/g, " ")  // Replace newlines with spaces
+      .trim();
 
     if (!cleanedText || cleanedText.length < 50) {
       return NextResponse.json(
         {
-          error:
-            "File appears to be empty or contains insufficient text for summarization",
+          error: "File appears to be empty or contains insufficient text for summarization",
         },
         { status: 400 }
       );
     }
 
-    // Generate summaries safely with chunking
+    // Generate summaries using Groq
     const summaries = await generateSummaries(cleanedText);
 
     return NextResponse.json({
       text: cleanedText,
-      summaries,
+      summaries: {
+        short: summaries.short,
+        detailed: summaries.detailed
+      },
       wordCount: cleanedText.split(/\s+/).length,
       fileName: file.name,
       fileType: file.type,
+      fileUrl, // ✅ now included
     });
+
   } catch (err) {
     console.error("❌ Server error:", err);
+    
+    if (err instanceof Error) {
+      if (err.message.includes("Groq API")) {
+        return NextResponse.json(
+          { error: "AI summarization service unavailable. Please try again later." },
+          { status: 503 }
+        );
+      }
+      if (err.message.includes("API key")) {
+        return NextResponse.json(
+          { error: "AI service configuration error." },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: "Failed to process file" },
       { status: 500 }
