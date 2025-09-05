@@ -1,7 +1,7 @@
 const steps = [
   { title: "1. Upload", desc: "Drag and drop or upload documents in PDF or DOCX format." },
   { title: "2. Summarize", desc: "AI summarizes the document's key sections automatically." },
-  { title: "3. Collaborate", desc: "Tag teammates, add comments, and approve or reject versions." },
+  { title: "3. Collaborate", desc: "Add comments, and approve or reject versions." },
 ];
 
 export default function HowItWorks() {

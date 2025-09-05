@@ -25,7 +25,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email or password");
     } else if (result?.ok) {
-      window.location.href = "/dashboard";
+      window.location.href = "/forum";
     }
   };
 

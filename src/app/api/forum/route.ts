@@ -1,3 +1,4 @@
+import { users } from '@/server/db/schema/auth-users';
 // app/api/feed/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/server/db";
@@ -18,5 +19,5 @@ export async function GET() {
     })
   );
 
-  return NextResponse.json({ feed: docsWithComments });
+  return NextResponse.json({ feed: docsWithComments});
 }

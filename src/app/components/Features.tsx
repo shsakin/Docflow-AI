@@ -5,7 +5,7 @@ const features = [
   },
   {
     title: "Collaborative Review",
-    desc: "Share docs with teammates and leave real-time comments.",
+    desc: "Share docs with teammates and leave comments.",
   },
   {
     title: "Workflow Approvals",

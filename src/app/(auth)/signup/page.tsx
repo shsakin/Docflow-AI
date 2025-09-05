@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function SignupPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "uploader" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -32,7 +32,7 @@ export default function SignupPage() {
         setError(data.error || "Signup failed");
       } else {
         setSuccess(true);
-        setForm({ name: "", email: "", password: "" });
+        setForm({ name: "", email: "", password: "", role: "uploader" });
       }
     } catch (err) {
       setError("Unexpected error occurred");
@@ -76,6 +76,19 @@ export default function SignupPage() {
             onChange={handleChange}
             required
           />
+
+          {/* Role Selector */}
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="w-full mt-1 p-2 border rounded-md text-gray-900"
+          >
+            <option value="uploader">Uploader</option>
+            <option value="reviewer">Reviewer</option>
+            <option value="admin">Admin</option>
+          </select>
+
           <button
             type="submit"
             disabled={loading}

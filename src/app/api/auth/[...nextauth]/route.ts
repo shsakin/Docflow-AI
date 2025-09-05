@@ -18,7 +18,6 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-
         // Find user by email
         const user = await db
           .select()
@@ -49,6 +48,27 @@ export const authOptions: AuthOptions = {
   ],
   pages: {
     signIn: "/auth/login", // your custom sign-in page route
+  },
+  session: {
+    strategy: "jwt", // JWT-based session
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      // Runs when user logs in
+      if (user) {
+        token.id = user.id;
+        token.role = user.role; // attach id to JWT
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Attach user.id to session
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;  // 👈 add id here
+      }
+      return session;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
