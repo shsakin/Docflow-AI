@@ -18,10 +18,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email already in use" }, { status: 400 });
     }
 
-    // Hash password
+  
     const hashed = await bcrypt.hash(password, 10);
 
-    // Default role = uploader
+  
     await db.insert(users).values({
       name,
       email,

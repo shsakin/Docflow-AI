@@ -1,8 +1,7 @@
-// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "@/server/db";                    // your Drizzle client
-import { users } from "@/server/db/schema/auth-users";          // your users table schema
+import { db } from "@/server/db";                    
+import { users } from "@/server/db/schema/auth-users";        
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
@@ -18,7 +17,7 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        // Find user by email
+        
         const user = await db
           .select()
           .from(users)
@@ -29,13 +28,13 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        // Compare hashed password
+        
         const isValid = await bcrypt.compare(credentials.password, user[0].passwordHash ?? "");
         if (!isValid) {
           return null;
         }
 
-        // Return user object for session
+        
         return {
           id: user[0].id.toString(),
           name: user[0].name,
@@ -47,25 +46,25 @@ export const authOptions: AuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/auth/login", // your custom sign-in page route
+    signIn: "/auth/login", 
   },
   session: {
-    strategy: "jwt", // JWT-based session
+    strategy: "jwt", 
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Runs when user logs in
+      
       if (user) {
         token.id = user.id;
-        token.role = user.role; // attach id to JWT
+        token.role = user.role; 
       }
       return token;
     },
     async session({ session, token }) {
-      // Attach user.id to session
+      
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;  // 👈 add id here
+        session.user.role = token.role as string; 
       }
       return session;
     },

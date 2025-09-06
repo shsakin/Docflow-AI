@@ -1,4 +1,3 @@
-// app/api/documents/share/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { documents } from "@/server/db/schema/forum";

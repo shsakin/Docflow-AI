@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // 🔍 search state
+
   const [search, setSearch] = useState("");
   const [searchedProfile, setSearchedProfile] = useState<UserProfile | null>(null);
   const [searchedStats, setSearchedStats] = useState<ProfileData | null>(null);

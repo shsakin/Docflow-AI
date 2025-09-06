@@ -6,9 +6,6 @@ import path from "path";
 
 export const runtime = "nodejs";
 
-// ------------------ Helpers ------------------
-
-// Groq summarizer function
 async function groqSummarize(text: string, style: "short" | "detailed"): Promise<string> {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   

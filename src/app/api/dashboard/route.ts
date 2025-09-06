@@ -6,14 +6,14 @@ import { users } from "@/server/db/schema/auth-users";
 
 export async function GET() {
   try {
-    // Fetch all documents
+    
     const allDocs = await db.select().from(documents);
     const totalDocs = allDocs.length;
     const approved = allDocs.filter((d) => d.status === "approved").length;
     const rejected = allDocs.filter((d) => d.status === "rejected").length;
     const pending = allDocs.filter((d) => d.status === "pending").length;
 
-    // Recent docs
+   
     const recentDocs = await db
       .select({
         docTitle: documents.title,
@@ -24,7 +24,7 @@ export async function GET() {
       .orderBy(desc(documents.id))
       .limit(5);
 
-    // Recent comments
+    
     const recentComms = await db
       .select({
         docId: comments.documentId,

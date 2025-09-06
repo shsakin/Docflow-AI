@@ -1,4 +1,3 @@
-// app/api/feed/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { documents, comments } from "@/server/db/schema/forum";

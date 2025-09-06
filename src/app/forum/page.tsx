@@ -64,29 +64,29 @@ export default function ReviewerFeed(){
     setFeed(feed.map((doc) => (doc.id === docId ? { ...doc, status } : doc)));
   };
 
-  // ✅ Export PDF function for forum documents
+  // Export PDF function for forum documents
   const handleExportPDF = async (doc: Document) => {
     try {
-      // Create PDF content
+      
       const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF();
       
-      // Set up PDF styling
+      
       pdf.setFontSize(20);
       pdf.setFont("helvetica", "bold");
       pdf.text("Forum Document Summary", 20, 30);
       
-      // Add document title
+      
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
       pdf.text(`Title: ${doc.title}`, 20, 50);
       
-      // Add status
+     
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
       pdf.text(`Status: ${doc.status}`, 20, 65);
       
-      // Add summary section
+      
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
       pdf.text("Summary:", 20, 85);
