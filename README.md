@@ -1,40 +1,57 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 DocFlowAI
 
-## Getting Started
+DocFlowAI is an AI-powered **document summarization and workflow management platform** built with **Next.js, Drizzle ORM, NextAuth.js, and PostgreSQL**.  
+It enables uploaders to share research or academic documents, reviewers/admins to review and approve/reject them, and all users to engage via forum-style discussions.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔑 Authentication & Authorization
+- Secure login/signup using **NextAuth.js** (Credentials provider with hashed passwords).
+- Role-based access control:
+  - **Uploader** → Can upload documents and view their profile stats.
+  - **Reviewer** → Can review documents, approve/reject, and comment.
+  - **Admin** → Full privileges (approve/reject, manage users, analytics dashboard).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📤 Document Management
+- Upload PDF/DOCX files with auto-generated **summaries using HuggingFace models**.
+- Store file metadata (title, uploader, summary, status).
+- Generate shareable file links.
+- Export pdf of local machine.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 💬 Forum & Collaboration
+- Centralized **newsfeed of uploaded documents**.
+- Each document is displayed like a "post":
+  - Title, summary, file link, uploader name.
+  - **Approve / Reject buttons** (visible only to reviewers & admins).
+  - Comment system (all users can comment).
+- Real-time status updates (`pending`, `approved`, `rejected`).
 
-## Learn More
+### 📊 Analytics Dashboard
+- Visual overview of platform activity:
+  - Total documents uploaded.
+  - Distribution of `approved`, `rejected`, `pending`.
+  - Reviewer activity logs.
+- Charts built with **Recharts** (Bar & Pie charts).
+- Recent activity feed with animated UI (Framer Motion).
 
-To learn more about Next.js, take a look at the following resources:
+### 👤 Profile Page
+- Personalized profile for each user:
+  - Name, email, role.
+  - 📂 Upload stats:
+    - **Uploaders** → Number of documents uploaded.
+    - **Reviewers/Admins** → Number of documents uploaded + accepted/rejected decisions.
+- 🔍 Search bar → Search users by name to view their public stats.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🛠️ Tech Stack
+- **Frontend**: Next.js 14 (App Router), React, TailwindCSS, Framer Motion.
+- **Backend**: Next.js API Routes, Drizzle ORM, PostgreSQL.
+- **Authentication**: NextAuth.js (JWT-based sessions).
+- **Database**: PostgreSQL with Drizzle ORM migrations.
+- **AI Integration**: groq.com inference API for document summarization (model: llama-3.1-8b-instant).
+- **Charts**: Recharts for dashboard analytics.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# Docflow-AI
->>>>>>> 77f8ec3be6555709b47d2c990738b24b967f3ac2
